@@ -111,48 +111,46 @@ function generateCars(N){
     return cars;
 }
 
-function animate_car(){
-
-
-    for(let i = 0; i < traffic.length; i ++){
-        traffic[i].update_pos(road.borders, []);
+function animate_car() {
+ 
+    if (traffic && traffic.length > 0) {
+        for (let i = 0; i < traffic.length; i++) {
+            traffic[i].update_pos(road.borders, []);
+        }
     }
 
-    for(let i = 0; i < cars.length; i ++){
-        cars[i].update_pos(road.borders, traffic);
+    for (let i = 0; i < cars.length; i++) {
+        cars[i].update_pos(road.borders, traffic || []); 
     }
 
-    // Fitness function
-    // find the car with the minimum y-value of all the y-values of each car
-    bestCar = cars.find(
-        c => c.y == Math.min(...cars.map(c=>c.y))
-    );
+    // fitness function to find the car with the minimum y-value
+    bestCar = cars.find(c => c.y === Math.min(...cars.map(c => c.y)));
 
-    // clears the canvas every time
+    // clear the canvas every time
     carCanvas.height = window.innerHeight;
-    //networkCanvas.height = window.innerHeight;
 
     carCtx.save();
-    carCtx.translate(0, -bestCar.y+carCanvas.height*.7);
+    carCtx.translate(0, -bestCar.y + carCanvas.height * 0.7);
 
     road.draw(carCtx);
 
-    for(let i = 0; i < traffic.length; i ++){
-        traffic[i].draw(carCtx);
-
+    if (traffic && traffic.length > 0) {
+        for (let i = 0; i < traffic.length; i++) {
+            traffic[i].draw(carCtx);
+        }
     }
 
     carCtx.globalAlpha = 0.2;
-
-    for(let i = 0; i < cars.length; i ++){
+    for (let i = 0; i < cars.length; i++) {
         cars[i].draw(carCtx, "blue");
     }
 
+    // draw the best car with full opacity
     carCtx.globalAlpha = 1;
     bestCar.draw(carCtx, "blue", true);
 
     carCtx.restore();
-    // updates per frame
 
+    // request the next frame
     requestAnimationFrame(animate_car);
 }
