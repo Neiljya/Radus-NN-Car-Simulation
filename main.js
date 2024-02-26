@@ -35,22 +35,57 @@ if(localStorage.getItem("bestBrain")){
 
 }
 
-function generateRandomCar() {
-    const lane = Math.floor(Math.random() * 3); 
-    const positionY = -Math.random() * 500 - 100; 
-    return new Car(road.getLaneCenter(lane), positionY, 30, 50, "NPC", 2);
+function generateRandomCar(traffic) { 
+    const lane = Math.floor(Math.random() * 3);
+    const minSpace = 300;
+    let positionY = -Math.random() * 500 - 100;
+    let validPos = false;
+
+    for (let i = 0; i < 10 && !validPos; i++) {
+        validPos = true;
+        positionY = -Math.random() * 500 - 100;
+
+        for (const car of traffic) {
+            if (car.lane === lane && Math.abs(car.positionY - positionY) < minSpace) {
+                validPos = false;
+                break;
+            }
+        }
+    }
+    return validPos ? new Car(road.getLaneCenter(lane), positionY, 30, 50, "NPC", 2) : null;
 }
 
 function generateInitialTraffic(numberOfCars) {
     const initialTraffic = [];
     for (let i = 0; i < numberOfCars; i++) {
-        initialTraffic.push(generateRandomCar());
+        const newCar = generateRandomCar(initialTraffic);
+        if (newCar) { 
+            initialTraffic.push(newCar);
+        }
     }
     return initialTraffic;
 }
 
+//const traffic = generateInitialTraffic(4); 
+let traffic;
 
-const traffic = generateInitialTraffic(6); 
+function startSimulation() {
+    const N = parseInt(document.getElementById("carCount").value) || 4;
+
+    localStorage.setItem("carCount", N);
+
+    traffic = generateInitialTraffic(N)
+    requestAnimationFrame(animate_car)
+}
+
+window.onload = function() {
+    const savedCarCount = parseInt(localStorage.getItem("carCount")) || 4;
+
+    document.getElementById("carCount").value = savedCarCount;
+
+    startSimulation();
+}
+
 
 
 
@@ -75,6 +110,7 @@ function generateCars(N){
 
     return cars;
 }
+
 function animate_car(){
 
 
